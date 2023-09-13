@@ -17,11 +17,11 @@ import com.jsp.board.model.BoardVO;
 @WebServlet("*.board")
 public class BoardController extends HttpServlet {
 	private static final long serialVersionUID = 1L;
-       
 
-    public BoardController() {
-        super();
-    }
+
+	public BoardController() {
+		super();
+	}
 
 
 	protected void service(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
@@ -29,53 +29,53 @@ public class BoardController extends HttpServlet {
 		if (request.getMethod().equals("POST")) {
 			request.setCharacterEncoding("UTF-8");
 		}
-		
+
 		String uri = request.getRequestURI();
 		uri = uri.substring(request.getContextPath().length() + 1, uri.lastIndexOf("."));
-		
+
 		System.out.println("정제된 uri: " + uri);
-		
+
 		switch (uri) {
 		case "write":
 			System.out.println("글쓰기 페이지로 이동 요청!");
 			response.sendRedirect("board/board_write.jsp");
 			break;
-			
+
 		case "regist":
 			System.out.println("글 등록 요청이 들어옴!");
 			String writer = request.getParameter("writer");
 			String title = request.getParameter("title");
 			String content = request.getParameter("content");
-			
+
 			BoardVO vo = new BoardVO();
 			vo.setWriter(writer);
 			vo.setTitle(title);
 			vo.setContent(content);
 			vo.setRegDate(LocalDateTime.now());
-			
+
 			BoardRepository.getInstance()
 							.regist(vo); // 글 등록 완료
-			
+
 			/*
             왜 board_list.jsp로 바로 리다이렉트를 하면 안될까?
             board_list.jsp에는 데이터베이스로부터 전체 글 목록을 가져오는
             로직을 작성하지 않을 것이기 때문입니다. (jsp는 단순히 보여지는 역할만 수행)
             컨트롤러로 글 목록 요청이 다시 들어올 수 있게끔
             sendRedirect()를 사용하여 자동 목록 재 요청이 들어오게 하는 겁니다.
-            */
+			*/
 			response.sendRedirect("/JspBasic/list.board");
 			break;
-			
+
 		case "list":
 			System.out.println("글 목록 요청이 들어옴!");
 			List<BoardVO> list = BoardRepository.getInstance().getList();
-			
+
 			// DB로부터 전달받은 글 목록을 세션에 넣기는 좀 아깝습니다.
 			// 세션 -> 데이터를 계속 유지하기 위한 수단. -> 글 목록을 계속 유지해? 왜?
 			// 글 목록은 한 번 응답하면 더이상 필요 없다. -> 계속 갱신되는 데이터이기 때문
 			// 응답이 나가면 자동으로 소멸하는 request 객체를 사용하자
 			request.setAttribute("boardList", list);
-			
+
 			/*
 			 여기서 sendRedirect를 하면 안되는 이유
 			 request 객체에 list를 담아서 전달하러 하는데, sendRedirect를 사용하면
@@ -84,21 +84,40 @@ public class BoardController extends HttpServlet {
 			 그쪽에서 응답이 나갈 수 있도록 처리해야 합니다.
 			 */
 //			response.sendRedirect("board/board_list.jsp");
-			
+
 			//request 객체를 다음 화면까지 운반하기 위한 forward 기능을 제공하는 객체
 			// -> RequestDispatcher
 			request.getRequestDispatcher("board/board_list.jsp")
-							.forward(request, response);
+					.forward(request, response);
 			break;
 		case "content":
-			int bId = Integer.parseInt(request.getParameter("bId"));
-			list = BoardRepository.getInstance().getList();
-			BoardVO bvo01 = list.get(bId - 1);
-			System.out.println(bId);
-			System.out.println(bvo01.getWriter());
-			System.out.println(bvo01.getTitle());
-			System.out.println(bvo01.getContent());
-			System.out.println(bvo01.getRegDate());
+			System.out.println("글 보기 요청이 들어옴!");
+			int bId01 = Integer.parseInt(request.getParameter("bId"));
+
+			request.setAttribute("boardContent"
+					, BoardRepository.getInstance()
+					.getList().get(bId01 - 1));
+
+			request.getRequestDispatcher("board/board_content.jsp")
+					.forward(request, response);
+
+//			list = BoardRepository.getInstance().getList();
+//			BoardVO bvo01 = list.get(bId - 1);
+//			System.out.println(bId);
+//			System.out.println(bvo01.getWriter());
+//			System.out.println(bvo01.getTitle());
+//			System.out.println(bvo01.getContent());
+//			System.out.println(bvo01.getRegDate());
+			break;
+
+		case "delete":
+			System.out.println("글 삭제 요청이 들어옴!");
+			int bId02 = Integer.parseInt(request.getParameter("bId"));
+			request.setAttribute("boardContent",
+					BoardRepository.getInstance()
+					.getList().remove(bId02 - 1));
+
+			response.sendRedirect("/JspBasic/list.board");
 			break;
 		}
 	}

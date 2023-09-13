@@ -49,7 +49,7 @@
 			<fmt:formatDate value="${ parsedDateTime }" pattern="yyyy년 MM월 dd일 HH:mm:ss"/>
 			</td>
 			<td>
-			[삭제]
+			<a href="/JspBasic/delete.board?bId=${ num.count }" onclick="return confirm('삭제하시겠습니까?')">[삭제]</a>
 			</td>
 		</tr>
 		</c:forEach>
