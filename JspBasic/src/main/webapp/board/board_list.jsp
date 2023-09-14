@@ -11,6 +11,11 @@
 <body>
 
 	<h2>게시글 목록</h2>
+	<c:choose>
+	<c:when test="${ boardList.size() == 0 }">
+	<h3>게시판에 글이 없습니다.</h3>
+	</c:when>
+	<c:otherwise>
 	<table border="1">
 		<colgroup>
 			<col width="50px">
@@ -54,10 +59,18 @@
 		</tr>
 		</c:forEach>
 	</table>
-	
+	</c:otherwise>
+	</c:choose>
+
+
 	<br>
-	
+
+	<form action="/JspBasic/search.board">
+		<input type="text" name="keyword" placeholder="작성자 이름을 입력하세요">
+		<input type="submit" value="검색">
+	</form>
+
 	<a href="/JspBasic/write.board">새 글 작성하기</a>
-	
+
 </body>
 </html>
